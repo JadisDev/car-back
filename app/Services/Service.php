@@ -21,4 +21,8 @@ abstract class Service
     public function responseErro(string $message = 'Erro inesperado') : JsonResponse {
         return $this->response([$message], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+    public function responseData(array $data) : JsonResponse {
+        return $this->response($data, Response::HTTP_OK);
+    }
 }
