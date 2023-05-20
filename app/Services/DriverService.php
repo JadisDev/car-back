@@ -40,4 +40,9 @@ class DriverService extends Service
             return $this->responseErro();
         }
     }
+
+    public function all()
+    {
+        return $this->responseData(Driver::all()->toArray());
+    }
 }

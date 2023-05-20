@@ -19,4 +19,9 @@ class DriverController extends Controller
     {
         return $this->service->save($request);
     }
+
+    public function all(Request $request)
+    {
+        return $this->service->all($request);
+    }
 }
