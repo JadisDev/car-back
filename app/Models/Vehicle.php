@@ -10,9 +10,9 @@ class Vehicle extends Model {
         'plate', 'model',
     ];
 
-    public function vehicle()
+    public function driver()
     {
-        return $this->hasOne(Vehicle::class);
+        return $this->hasOne(Driver::class);
     }
 
 }

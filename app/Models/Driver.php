@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Driver extends Model {
 
     protected $fillable = [
-        'name', 'document',
+        'name', 'document', 'vehicle_id',
     ];
 
-    public function driver()
+    public function vehicle()
     {
-        return $this->hasOne(Driver::class);
+        return $this->hasOne(Vehicle::class);
     }
 
 }
