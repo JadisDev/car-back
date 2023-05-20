@@ -17,6 +17,8 @@ class CreateDrivesTable extends Migration
             $table->id();
             $table->string('name')->nullable();
             $table->string('document')->nullable();
+            $table->unsignedBigInteger('vehicle_id');
+            $table->foreign('vehicle_id')->references('id')->on('vehicles');
             $table->timestamps();
         });
     }
