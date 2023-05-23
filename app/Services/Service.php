@@ -25,4 +25,13 @@ abstract class Service
     public function responseData(array $data) : JsonResponse {
         return $this->response($data, Response::HTTP_OK);
     }
+
+    public function responseValidateData(array $data) : JsonResponse {
+        return $this->response($data, Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function responseNotFoundData(array $data) : JsonResponse {
+        return $this->response($data, Response::HTTP_NOT_FOUND);
+    }
+
 }

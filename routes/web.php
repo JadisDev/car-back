@@ -20,5 +20,8 @@ $router->get('/', function () use ($router) {
 $router->group(['prefix' => 'api/v1/'], function () use ($router) {
     $router->post('/driver', 'DriverController@store');
     $router->get('/driver', 'DriverController@all');
+    $router->get('/driver/name-document-plate/{param}', 'DriverController@searchNameOrDocumentOrPlate');
+    $router->delete('/driver/{id}', 'DriverController@delete');
+    $router->patch('/driver/{id}', 'DriverController@update');
 });
 

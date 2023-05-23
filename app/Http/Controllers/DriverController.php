@@ -20,8 +20,23 @@ class DriverController extends Controller
         return $this->service->save($request);
     }
 
-    public function all(Request $request)
+    public function all()
     {
-        return $this->service->all($request);
+        return $this->service->all();
+    }
+
+    public function searchNameOrDocumentOrPlate(string $param)
+    {
+        return $this->service->searchNameOrDocumentOrPlate($param);
+    }
+
+    public function delete(int $id)
+    {
+        return $this->service->delete($id);
+    }
+
+    public function update(int $id, Request $request)
+    {
+        return $this->service->update($id, $request);
     }
 }

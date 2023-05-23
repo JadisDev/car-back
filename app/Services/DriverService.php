@@ -17,17 +17,14 @@ class DriverService extends Service
     public function save(Request $request)
     {
         try {
-            $validation = 'required|min:3';
-            $this->validate($request, [
-                'name' => $validation,
-                'document' => $validation,
-                'plate' => $validation,
-                'model' => $validation,
-            ]);
+            $this->validation($request);
             DB::beginTransaction();
 
             $inputVehicle = $request->only('plate', 'model');
-            $vehicle = Vehicle::create($inputVehicle);
+            $vehicle = Vehicle::where('palte', $inputVehicle['palte'])->first();
+            if (!$vehicle) {
+                $vehicle = Vehicle::create($inputVehicle);
+            }
 
             $inputDriver = $request->only('name', 'document');
             $inputDriver['vehicle_id'] = $vehicle->id;
@@ -44,5 +41,48 @@ class DriverService extends Service
     public function all()
     {
         return $this->responseData(Driver::all()->toArray());
+    }
+
+    public function searchNameOrDocumentOrPlate(string $param) {
+        $result = DB::table('drivers')
+        ->select('*')
+            ->join('vehicles', 'drivers.vehicle_id', '=', 'vehicles.id')
+            ->where('drivers.name', 'like', '%'. $param . '%')
+            ->orWhere('drivers.document', 'like', '%'. $param . '%')
+            ->orWhere('vehicles.plate', 'like', '%'. $param . '%')
+            ->get();
+        return $this->responseData($result->toArray());
+    }
+
+    public function delete(int $id)
+    {
+        $driver = Driver::find($id);
+        if (!$driver) {
+            return $this->responseNotFoundData(['motorista não encontrado']);
+        }
+        $driver->delete();
+        return $this->responseData($driver->toArray());
+    }
+
+    public function update(int $id, Request $request) {
+        $this->validate($request, [
+            'name' => 'required|min:3',
+            'document' => 'min:3',
+        ]);
+        $inputDataUpdate = $request->all();
+        $driver = Driver::find($id);
+        if (!$driver) {
+            return $this->responseNotFoundData(['motorista não encontrado']);
+        }
+        $driver->update($request->all());
+        return $this->responseData($request->all());
+    }
+
+    private function validation(Request $request) {
+        $validation = 'required|min:3';
+        $this->validate($request, [
+            'name' => $validation,
+            'document' => $validation,
+        ]);
     }
 }
