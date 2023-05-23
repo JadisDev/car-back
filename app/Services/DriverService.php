@@ -40,7 +40,7 @@ class DriverService extends Service
 
     public function all()
     {
-        return $this->responseData(Driver::all()->toArray());
+        return $this->responseData(Driver::with('vehicle')->get()->toArray());
     }
 
     public function searchNameOrDocumentOrPlate(string $param)
