@@ -21,7 +21,7 @@ class DriverService extends Service
             DB::beginTransaction();
 
             $inputVehicle = $request->only('plate', 'model');
-            $vehicle = Vehicle::where('palte', $inputVehicle['palte'])->first();
+            $vehicle = Vehicle::where('plate', $inputVehicle['plate'])->first();
             if (!$vehicle) {
                 $vehicle = Vehicle::create($inputVehicle);
             }
@@ -43,13 +43,14 @@ class DriverService extends Service
         return $this->responseData(Driver::all()->toArray());
     }
 
-    public function searchNameOrDocumentOrPlate(string $param) {
+    public function searchNameOrDocumentOrPlate(string $param)
+    {
         $result = DB::table('drivers')
-        ->select('*')
+            ->select('*')
             ->join('vehicles', 'drivers.vehicle_id', '=', 'vehicles.id')
-            ->where('drivers.name', 'like', '%'. $param . '%')
-            ->orWhere('drivers.document', 'like', '%'. $param . '%')
-            ->orWhere('vehicles.plate', 'like', '%'. $param . '%')
+            ->where('drivers.name', 'like', '%' . $param . '%')
+            ->orWhere('drivers.document', 'like', '%' . $param . '%')
+            ->orWhere('vehicles.plate', 'like', '%' . $param . '%')
             ->get();
         return $this->responseData($result->toArray());
     }
@@ -64,7 +65,8 @@ class DriverService extends Service
         return $this->responseData($driver->toArray());
     }
 
-    public function update(int $id, Request $request) {
+    public function update(int $id, Request $request)
+    {
         $this->validate($request, [
             'name' => 'required|min:3',
             'document' => 'min:3',
@@ -78,7 +80,8 @@ class DriverService extends Service
         return $this->responseData($request->all());
     }
 
-    private function validation(Request $request) {
+    private function validation(Request $request)
+    {
         $validation = 'required|min:3';
         $this->validate($request, [
             'name' => $validation,
