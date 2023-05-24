@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Exceptions\NotFoundException;
 use App\Models\Driver;
 use App\Models\Vehicle;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection as CollectionSupport; 
 
 class DriverService extends Service
 {
@@ -14,7 +17,7 @@ class DriverService extends Service
      *
      * @return void
      */
-    public function save(Request $request)
+    public function save(Request $request) : Driver
     {
         $this->validation($request);
         try {
@@ -30,38 +33,37 @@ class DriverService extends Service
             $inputDriver['vehicle_id'] = $vehicle->id;
             $driver = Driver::create($inputDriver);
             DB::commit();
-            return $this->responseCreat($driver->toArray());
+            return $driver;
         } catch (\Throwable $e) {
             DB::rollBack();
-            return $this->responseErro();
+            throw $e;
         }
     }
 
-    public function all()
+    public function all() : Collection
     {
-        return $this->responseData(Driver::with('vehicle')->get()->toArray());
+        return Driver::with('vehicle')->get();
     }
 
-    public function searchNameOrDocumentOrPlate(string $param)
+    public function searchNameOrDocumentOrPlate(string $param) : CollectionSupport
     {
-        $result = DB::table('drivers')
+        return DB::table('drivers')
             ->select('*')
             ->join('vehicles', 'drivers.vehicle_id', '=', 'vehicles.id')
             ->where('drivers.name', 'like', '%' . $param . '%')
             ->orWhere('drivers.document', 'like', '%' . $param . '%')
             ->orWhere('vehicles.plate', 'like', '%' . $param . '%')
             ->get();
-        return $this->responseData($result->toArray());
     }
 
     public function delete(int $id)
     {
         $driver = Driver::find($id);
         if (!$driver) {
-            return $this->responseNotFoundData(['motorista não encontrado']);
+            throw new NotFoundException("Motorista não encontrado");
         }
         $driver->delete();
-        return $this->responseData($driver->toArray());
+        return $driver;
     }
 
     public function update(int $id, Request $request)
