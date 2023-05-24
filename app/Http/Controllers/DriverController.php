@@ -26,9 +26,9 @@ class DriverController extends Controller
             /** @var Illuminate\Database\Eloquent\Collection $driver */
             $driver = $this->service->save($request);
             return ResponseApi::success($driver->toArray());
-        } catch(ValidationException $e) {
+        } catch (ValidationException $e) {
             return ResponseApi::warning($e->getMessage(), $e->errors());
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return ResponseApi::error($e);
         }
     }
@@ -38,9 +38,9 @@ class DriverController extends Controller
         try {
             $drivers = $this->service->all();
             return ResponseApi::success($drivers->toArray());
-        } catch(ValidationException $e) {
+        } catch (ValidationException $e) {
             return ResponseApi::warning($e->getMessage(), $e->errors());
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return ResponseApi::error($e);
         }
     }
@@ -50,9 +50,9 @@ class DriverController extends Controller
         try {
             $data = $this->service->searchNameOrDocumentOrPlate($param);
             return ResponseApi::success($data->toArray());
-        } catch(ValidationException $e) {
+        } catch (ValidationException $e) {
             return ResponseApi::warning($e->getMessage(), $e->errors());
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return ResponseApi::error($e);
         }
     }
@@ -62,15 +62,24 @@ class DriverController extends Controller
         try {
             $driver = $this->service->delete($id);
             return ResponseApi::success($driver->toArray());
-        } catch(NotFoundException $e) {
+        } catch (NotFoundException $e) {
             return ResponseApi::warning($e->getMessage(), [], Response::HTTP_NOT_FOUND);
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return ResponseApi::error($e);
         }
     }
 
     public function update(int $id, Request $request)
     {
-        return $this->service->update($id, $request);
+        try {
+            $dataUpdate = $this->service->update($id, $request);
+            return ResponseApi::success($dataUpdate->toArray());
+        } catch (ValidationException $e) {
+            return ResponseApi::warning($e->getMessage(), $e->errors());
+        } catch (NotFoundException $e) {
+            return ResponseApi::warning($e->getMessage(), [], Response::HTTP_NOT_FOUND);
+        } catch (Exception $e) {
+            return ResponseApi::error($e);
+        }
     }
 }
