@@ -16,8 +16,8 @@ class DriverService extends Service
      */
     public function save(Request $request)
     {
+        $this->validation($request);
         try {
-            $this->validation($request);
             DB::beginTransaction();
 
             $inputVehicle = $request->only('plate', 'model');
@@ -29,7 +29,6 @@ class DriverService extends Service
             $inputDriver = $request->only('name', 'document');
             $inputDriver['vehicle_id'] = $vehicle->id;
             $driver = Driver::create($inputDriver);
-
             DB::commit();
             return $this->responseCreat($driver->toArray());
         } catch (\Throwable $e) {
