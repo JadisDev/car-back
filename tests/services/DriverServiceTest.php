@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\services\ResponseDriverDTO;
+namespace tests\services;
 
 use App\Services\DriverService;
 use Illuminate\Http\Request;
@@ -10,18 +10,19 @@ class DriverServiceTest extends TestCase
 {
 
     private $fakeService;
+    private $fakeRequest;
 
     public function setUp(): void
     {
         $this->fakeService = $this->createMock(DriverService::class);
+        $this->fakeRequest = $this->createMock(Request::class);
     }
 
     public function testSave()
     {
         $response = $this->getResponsePostDriver();
-        $fakeRequest = $this->createMock(Request::class);
         $this->fakeService->method('save')->willReturn($response);
-        $result = $this->fakeService->save($fakeRequest);
+        $result = $this->fakeService->save($this->fakeRequest);
         $this->assertEquals($response, $result);
     }
 
@@ -52,6 +53,28 @@ class DriverServiceTest extends TestCase
         $result = $this->fakeService->delete($deleteId);
         $this->assertEquals($delete, $result);
         $this->assertTrue($result['status'] === 200);
+    }
+
+    public function testUpdate() 
+    {
+        $updateId = 5;
+        $update = $this->getResponseUpdateDriver();
+        $this->fakeService->method('update')->willReturn($update);
+        $result = $this->fakeService->update($updateId, $this->fakeRequest);
+        $this->assertEquals($update, $result);
+        $this->assertTrue($result['status'] === 200);
+    }
+
+    public function getResponseUpdateDriver(): array
+    {
+        $response = '{
+            "data": {
+                "name": "Teste",
+                "document": "334455"
+            },
+            "status": 200
+        }';
+        return json_decode($response, true);
     }
 
     public function getResponseDeleteDriver(): array
