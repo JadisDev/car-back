@@ -1,136 +1,121 @@
 <?php
 
-namespace tests\services;
-
 use App\Services\DriverService;
+use App\Models\Driver;
+use App\Models\Vehicle;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use TestCase;
+use Laravel\Lumen\Testing\DatabaseTransactions;
 
 class DriverServiceTest extends TestCase
 {
+    use DatabaseTransactions;
 
-    private $fakeService;
-    private $fakeRequest;
-
-    public function setUp(): void
+    public function creatData(): Driver
     {
-        $this->fakeService = $this->createMock(DriverService::class);
-        $this->fakeRequest = $this->createMock(Request::class);
+        $vehicle = Vehicle::create([
+            'plate' => 'ABC123',
+            'model' => 'Car Model',
+        ]);
+
+        return Driver::create([
+            'name' => 'John Doe',
+            'document' => '123456789',
+            'vehicle_id' => $vehicle->id
+        ]);
     }
 
+    /**
+    * @covers App\Services\DriverService::save
+    * @covers App\Services\DriverService::validation
+    * @covers App\Services\Service::response
+    * @covers App\Services\Service::responseCreat
+    */
     public function testSave()
     {
-        $response = $this->getResponsePostDriver();
-        $this->fakeService->method('save')->willReturn($response);
-        $result = $this->fakeService->save($this->fakeRequest);
-        $this->assertEquals($response, $result);
+        $request = new Request([
+            'name' => 'John Doe',
+            'document' => '123456789',
+            'plate' => 'ABC123',
+            'model' => 'Car Model',
+        ]);
+
+        $service = new DriverService();
+        $response = $service->save($request);
+        $this->assertInstanceOf(JsonResponse::class, $response);
     }
 
+    /**
+    * @covers App\Services\DriverService::all
+    * @covers App\Models\Driver::vehicle
+    * @covers App\Services\Service::response
+    * @covers App\Services\Service::responseData
+    */
     public function testAll()
     {
-        $all = $this->getResponseAllDriver();
-        $this->fakeService->method('all')->willReturn($all);
-        $result = $this->fakeService->all();
-        $this->assertEquals($all, $result);
-        $this->assertEquals(count($all['data']), count($result['data']));
+        $this->creatData();
+
+        $service = new DriverService();
+        $response = $service->all();
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $result = json_decode($response->content());
+        $this->assertTrue(count($result->data) >= 1);
     }
 
-    public function testSearchNameOrDocumentOrPlate() 
+    /**
+    * @covers App\Services\DriverService::searchNameOrDocumentOrPlate
+    * @covers App\Models\Driver::vehicle
+    * @covers App\Services\Service::response
+    * @covers App\Services\Service::responseData
+    */
+    public function testSearchNameOrDocumentOrPlate()
     {
-        $param = 'teste';
-        $filter = $this->getResponseAllDriver();
-        $this->fakeService->method('searchNameOrDocumentOrPlate')->willReturn($filter);
-        $result = $this->fakeService->searchNameOrDocumentOrPlate($param);
-        $this->assertEquals($filter, $result);
-        $this->assertTrue($result['status'] === 200);
+        $this->creatData();
+        $service = new DriverService();
+        $response = $service->searchNameOrDocumentOrPlate('John Doe');
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $result = json_decode($response->content());
+        $this->assertTrue(count($result->data) >= 1);
     }
 
+    /**
+    * @covers App\Services\DriverService::delete
+    * @covers App\Services\DriverService::searchNameOrDocumentOrPlate
+    * @covers App\Models\Driver::vehicle
+    * @covers App\Services\Service::response
+    * @covers App\Services\Service::responseData
+    */
     public function testDelete()
     {
-        $deleteId = 5;
-        $delete = $this->getResponseDeleteDriver();
-        $this->fakeService->method('delete')->willReturn($delete);
-        $result = $this->fakeService->delete($deleteId);
-        $this->assertEquals($delete, $result);
-        $this->assertTrue($result['status'] === 200);
+        $driver = $this->creatData();
+        $service = new DriverService();
+        $response = $service->delete($driver->id);
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $search = $service->searchNameOrDocumentOrPlate('John Doe');
+        $result = json_decode($search->content());
+        $this->assertIsArray($result->data);
+        $this->assertTrue(count($result->data) === 0);
     }
 
-    public function testUpdate() 
+    /**
+    * @covers App\Services\DriverService::update
+    * @covers App\Models\Driver::vehicle
+    * @covers App\Services\Service::response
+    * @covers App\Services\Service::responseData
+    */
+    public function testUpdate()
     {
-        $updateId = 5;
-        $update = $this->getResponseUpdateDriver();
-        $this->fakeService->method('update')->willReturn($update);
-        $result = $this->fakeService->update($updateId, $this->fakeRequest);
-        $this->assertEquals($update, $result);
-        $this->assertTrue($result['status'] === 200);
-    }
+        $driver = $this->creatData();
+        $request = new Request([
+            'name' => 'Updated Name',
+            'document' => '987654321',
+        ]);
 
-    public function getResponseUpdateDriver(): array
-    {
-        $response = '{
-            "data": {
-                "name": "Teste",
-                "document": "334455"
-            },
-            "status": 200
-        }';
-        return json_decode($response, true);
-    }
-
-    public function getResponseDeleteDriver(): array
-    {
-        $response = '{
-            "data": {
-                "id": 2,
-                "name": "Adriano",
-                "document": "23123122",
-                "vehicle_id": 1,
-                "created_at": null,
-                "updated_at": null
-            },
-            "status": 200
-        }';
-        return json_decode($response, true);
-    }
-
-    public function getResponsePostDriver(): array
-    {
-        $response = '{
-            "data": {
-                "name": "Jadis",
-                "document": "123",
-                "vehicle_id": 2,
-                "updated_at": "2023-05-23T22:20:42.000000Z",
-                "created_at": "2023-05-23T22:20:42.000000Z",
-                "id": 5
-            },
-            "status": 201
-        }';
-        return json_decode($response, true);
-    }
-
-    public function getResponseAllDriver() 
-    {
-        $response = '{
-            "data": [
-                {
-                    "id": 3,
-                    "name": "Lilian",
-                    "document": "123123",
-                    "vehicle_id": 1,
-                    "created_at": null,
-                    "updated_at": null,
-                    "vehicle": {
-                        "id": 1,
-                        "plate": "123",
-                        "model": "fiat - uno",
-                        "created_at": null,
-                        "updated_at": null
-                    }
-                }
-            ],
-            "status": 200
-        }';
-        return json_decode($response, true);
+        $service = new DriverService();
+        $response = $service->update($driver->id, $request);
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $result = json_decode($response->content());
+        $this->assertEquals($result->data->name, 'Updated Name');
+        $this->assertEquals($result->data->document, '987654321');
     }
 }
