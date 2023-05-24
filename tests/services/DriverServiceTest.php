@@ -44,6 +44,32 @@ class DriverServiceTest extends TestCase
         $this->assertTrue($result['status'] === 200);
     }
 
+    public function testDelete()
+    {
+        $deleteId = 5;
+        $delete = $this->getResponseDeleteDriver();
+        $this->fakeService->method('delete')->willReturn($delete);
+        $result = $this->fakeService->delete($deleteId);
+        $this->assertEquals($delete, $result);
+        $this->assertTrue($result['status'] === 200);
+    }
+
+    public function getResponseDeleteDriver(): array
+    {
+        $response = '{
+            "data": {
+                "id": 2,
+                "name": "Adriano",
+                "document": "23123122",
+                "vehicle_id": 1,
+                "created_at": null,
+                "updated_at": null
+            },
+            "status": 200
+        }';
+        return json_decode($response, true);
+    }
+
     public function getResponsePostDriver(): array
     {
         $response = '{
