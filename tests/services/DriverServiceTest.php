@@ -1,10 +1,13 @@
 <?php
 
+use App\Exceptions\NotFoundException;
 use App\Services\DriverService;
 use App\Models\Driver;
 use App\Models\Vehicle;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as CollectionSupport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Laravel\Lumen\Testing\DatabaseTransactions;
 
 class DriverServiceTest extends TestCase
@@ -28,8 +31,6 @@ class DriverServiceTest extends TestCase
     /**
     * @covers App\Services\DriverService::save
     * @covers App\Services\DriverService::validation
-    * @covers App\Services\Service::response
-    * @covers App\Services\Service::responseCreat
     */
     public function testSave()
     {
@@ -41,67 +42,68 @@ class DriverServiceTest extends TestCase
         ]);
 
         $service = new DriverService();
-        $response = $service->save($request);
-        $this->assertInstanceOf(JsonResponse::class, $response);
+        $drive = $service->save($request);
+        $this->assertInstanceOf(Driver::class, $drive);
     }
 
     /**
     * @covers App\Services\DriverService::all
     * @covers App\Models\Driver::vehicle
-    * @covers App\Services\Service::response
-    * @covers App\Services\Service::responseData
     */
     public function testAll()
     {
         $this->creatData();
-
         $service = new DriverService();
         $response = $service->all();
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $result = json_decode($response->content());
-        $this->assertTrue(count($result->data) >= 1);
+        $this->assertInstanceOf(Collection::class, $response);
+        $this->assertTrue(count($response->toArray()) >= 1);
     }
 
     /**
     * @covers App\Services\DriverService::searchNameOrDocumentOrPlate
     * @covers App\Models\Driver::vehicle
-    * @covers App\Services\Service::response
-    * @covers App\Services\Service::responseData
     */
     public function testSearchNameOrDocumentOrPlate()
     {
         $this->creatData();
         $service = new DriverService();
         $response = $service->searchNameOrDocumentOrPlate('John Doe');
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $result = json_decode($response->content());
-        $this->assertTrue(count($result->data) >= 1);
+        $this->assertInstanceOf(CollectionSupport::class, $response);
+        $this->assertTrue(count($response->toArray()) >= 1);
     }
 
     /**
     * @covers App\Services\DriverService::delete
     * @covers App\Services\DriverService::searchNameOrDocumentOrPlate
     * @covers App\Models\Driver::vehicle
-    * @covers App\Services\Service::response
-    * @covers App\Services\Service::responseData
     */
     public function testDelete()
     {
         $driver = $this->creatData();
         $service = new DriverService();
-        $response = $service->delete($driver->id);
-        $this->assertInstanceOf(JsonResponse::class, $response);
+        $driver = $service->delete($driver->id);
+        $this->assertInstanceOf(Driver::class, $driver);
         $search = $service->searchNameOrDocumentOrPlate('John Doe');
-        $result = json_decode($search->content());
-        $this->assertIsArray($result->data);
-        $this->assertTrue(count($result->data) === 0);
+        $this->assertInstanceOf(CollectionSupport::class, $search);
+        $this->assertTrue(count($search->toArray()) === 0);
+    }
+
+    /**
+    * @covers App\Services\DriverService::delete
+    * @covers App\Services\DriverService::searchNameOrDocumentOrPlate
+    * @covers App\Models\Driver::vehicle
+    * @covers App\Exceptions\NotFoundException::__construct
+    */
+    public function testDeleteFail()
+    {
+        $service = new DriverService();
+        $this->expectException(NotFoundException::class);
+        $service->delete(9999);
     }
 
     /**
     * @covers App\Services\DriverService::update
     * @covers App\Models\Driver::vehicle
-    * @covers App\Services\Service::response
-    * @covers App\Services\Service::responseData
     */
     public function testUpdate()
     {
@@ -112,10 +114,26 @@ class DriverServiceTest extends TestCase
         ]);
 
         $service = new DriverService();
-        $response = $service->update($driver->id, $request);
-        $this->assertInstanceOf(JsonResponse::class, $response);
-        $result = json_decode($response->content());
-        $this->assertEquals($result->data->name, 'Updated Name');
-        $this->assertEquals($result->data->document, '987654321');
+        $driver = $service->update($driver->id, $request);
+        $this->assertInstanceOf(Driver::class, $driver);
+        $this->assertEquals($driver->toArray()['name'], 'Updated Name');
+        $this->assertEquals($driver->toArray()['document'], '987654321');
+    }
+
+    /**
+    * @covers App\Services\DriverService::update
+    * @covers App\Services\DriverService::searchNameOrDocumentOrPlate
+    * @covers App\Models\Driver::vehicle
+    * @covers App\Exceptions\NotFoundException::__construct
+    */
+    public function testUpdateFail()
+    {
+        $request = new Request([
+            'name' => 'Updated Name',
+            'document' => '987654321',
+        ]);
+        $service = new DriverService();
+        $this->expectException(NotFoundException::class);
+        $service->update(9999, $request);
     }
 }
