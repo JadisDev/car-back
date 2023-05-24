@@ -9,10 +9,4 @@ class Vehicle extends Model {
     protected $fillable = [
         'plate', 'model',
     ];
-
-    public function driver()
-    {
-        return $this->hasOne(Driver::class);
-    }
-
 }
