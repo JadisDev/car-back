@@ -49,7 +49,6 @@ abstract class ResponseApi
         array $data = [],
         int $httpCode = Response::HTTP_INTERNAL_SERVER_ERROR
     ): JsonResponse {
-        $data = (env("APP_ENV") == "production") ? "Ocorreu uma inconsistência no sistema, caso persista contate o suporte." : "{$data->getMessage()} linha: {$data->getLine()} arquivo: {$data->getFile()}";
         return self::json($message, $data, $httpCode);
     }
 
