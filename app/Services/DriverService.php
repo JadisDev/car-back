@@ -43,12 +43,12 @@ class DriverService extends Service
 
     public function searchNameOrDocumentOrPlate(string $param): CollectionSupport
     {
-        return DB::table('drivers')
-            ->select('*')
+        return Driver::select('drivers.*')
             ->join('vehicles', 'drivers.vehicle_id', '=', 'vehicles.id')
             ->where('drivers.name', 'like', '%' . $param . '%')
             ->orWhere('drivers.document', 'like', '%' . $param . '%')
             ->orWhere('vehicles.plate', 'like', '%' . $param . '%')
+            ->with('vehicle')
             ->get();
     }
 
