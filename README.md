@@ -102,8 +102,8 @@ Exemplo de saída:
 
 Ferramentas usadas no projeto
 
-* [PHP >= 7.3 || >= 8.0](http://www.dropwizard.io/1.0.2/docs/](https://www.php.net/) - Linguagem
-* [laravel/lumen-framework](https://lumen.laravel.com/docs/10.x) - Framework
+* [PHP >= 7.3 || >= 8.0](https://www.php.net/) - Linguagem
+* [Laravel Lumen](https://lumen.laravel.com/docs/10.x) - Framework
 * [Phpunit](https://phpunit.de/) - Usada para testar
 
 ## ✒️ Autor
